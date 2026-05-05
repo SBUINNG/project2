@@ -67,13 +67,14 @@
         .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         .btn-delete { background: #fee2e2; color: var(--primary-red); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; }
         .analysis-text { font-size: 0.7rem; margin-top: 4px; }
+
+        .admin-controls { display: flex; gap: 8px; margin-bottom: 15px; justify-content: flex-end; }
+        .btn-small { padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; color: white; font-weight: 600; }
     </style>
 </head>
 <body>
 
-<!-- 인증 화면 -->
 <div id="auth-screen">
-    <!-- 1. 최초 가입 화면 -->
     <div class="auth-box" id="signup-box" style="display: none;">
         <h2>가계부 시작하기</h2>
         <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: 5px;">이름과 숫자 4자리 PIN을 설정하세요.</p>
@@ -82,7 +83,6 @@
         <button onclick="handleSignup()" style="width:100%; padding:12px; background:var(--primary-blue); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">설정 완료</button>
     </div>
 
-    <!-- 2. 로그인 화면 (숫자 전용) -->
     <div class="auth-box" id="login-box" style="display: none;">
         <h2 id="welcome-msg">환영합니다</h2>
         <p style="font-size: 0.8rem; color: var(--text-sub);">비밀번호 4자리를 입력하세요.</p>
@@ -95,7 +95,6 @@
     </div>
 </div>
 
-<!-- 메인 앱 화면 -->
 <div class="container" id="main-app">
     <header><h1>나만의 가계부</h1></header>
 
@@ -110,11 +109,16 @@
     </div>
 
     <div class="calendar-section">
-        <div class="calendar-header"><button onclick="changeMonth(-1)">◀</button><h4 id="calendar-month">2024. 05</h4><button onclick="changeMonth(1)">▶</button></div>
+        <div class="calendar-header"><button onclick="changeMonth(-1)">◀</button><h4 id="calendar-month">2026. 05</h4><button onclick="changeMonth(1)">▶</button></div>
         <div class="calendar-grid" id="calendar-grid">
             <div class="calendar-day-head">일</div><div class="calendar-day-head">월</div><div class="calendar-day-head">화</div>
             <div class="calendar-day-head">수</div><div class="calendar-day-head">목</div><div class="calendar-day-head">금</div><div class="calendar-day-head">토</div>
         </div>
+    </div>
+
+    <div class="admin-controls">
+        <button class="btn-small" style="background: var(--primary-blue)" onclick="setInitialBalance()">자산 설정</button>
+        <button class="btn-small" style="background: var(--text-sub)" onclick="logout()">로그아웃</button>
     </div>
 
     <div class="tabs">
@@ -184,7 +188,6 @@
 
     loginInput.addEventListener('input', (e) => {
         const val = e.target.value;
-        // 점 애니메이션
         dots.forEach((dot, i) => {
             if (i < val.length) dot.classList.add('active');
             else dot.classList.remove('active');
@@ -203,6 +206,7 @@
         }
     });
 
+    function logout() { location.reload(); }
     function resetAuth() { if(confirm("계정을 초기화하면 모든 데이터가 사라집니다.")) { localStorage.clear(); location.reload(); } }
 
     // --- 가계부 앱 로직 ---
@@ -319,6 +323,11 @@
 
     function deleteTransaction(id) { transactions = transactions.filter(t => t.id !== id); save(); }
     
+    function setInitialBalance() {
+        const val = prompt("현재 총 자산을 입력하세요 (예: 1000000):");
+        if (val) { transactions.push({ id: Date.now(), type: 'income', amount: parseInt(val), category: '기초자산', date: new Date().toISOString().split('T')[0], memo: '자산 초기 설정' }); save(); }
+    }
+
     function updateChart() {
         const ctx = document.getElementById('expenseChart').getContext('2d');
         const expenses = transactions.filter(t => t.type === 'expense' && new Date(t.date).getMonth() === new Date().getMonth());
